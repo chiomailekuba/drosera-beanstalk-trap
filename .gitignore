@@ -1,0 +1,13 @@
+# Foundry build artifacts
+out/
+cache/
+
+# Environment variables
+.env
+
+# Broadcast / deployment artifacts (optional - keep if you want on-chain tx records)
+# broadcast/
+
+# OS
+.DS_Store
+Thumbs.db
