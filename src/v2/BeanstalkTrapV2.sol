@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import "./interfaces/ITrap.sol";
-import "./TrapDeployConfig.sol";
+import "../interfaces/ITrap.sol";
+import "../TrapDeployConfig.sol";
 import "./BeanstalkTypes.sol";
 
 interface IBeanstalkTrapSnapshotTarget {
