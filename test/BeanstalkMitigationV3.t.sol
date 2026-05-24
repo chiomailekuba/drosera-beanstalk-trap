@@ -99,7 +99,9 @@ contract BeanstalkMitigationV3Test is Test {
         assertFalse(t2);
     }
 
-    function test_ShouldRespond_MalformedSameLengthSampleDoesNotRevert() public {
+    function test_ShouldRespond_MalformedSameLengthSampleDoesNotRevert()
+        public
+    {
         bytes[] memory window = new bytes[](2);
         window[0] = new bytes(10 * 32);
         window[1] = trap.collect();
@@ -180,7 +182,9 @@ contract BeanstalkMitigationV3Test is Test {
     }
 
     function test_TrapUsesRealGeneratedTarget_NotPlaceholder() public {
-        BeanstalkTypes.CollectOutput memory out = _decodeCollect(trap.collect());
+        BeanstalkTypes.CollectOutput memory out = _decodeCollect(
+            trap.collect()
+        );
 
         assertEq(out.target, address(protocol));
         assertTrue(out.target != PLACEHOLDER);

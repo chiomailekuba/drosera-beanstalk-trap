@@ -166,7 +166,10 @@ contract BeanstalkTrapV2 is ITrap {
         bytes[] calldata data
     ) external pure returns (bool, bytes memory) {
         if (data.length == 0 || data[0].length != COLLECT_OUTPUT_SIZE) {
-            return (true, abi.encode(uint8(BeanstalkTypes.REASON_OPERATIONAL_FAILURE)));
+            return (
+                true,
+                abi.encode(uint8(BeanstalkTypes.REASON_OPERATIONAL_FAILURE))
+            );
         }
 
         BeanstalkTypes.CollectOutput memory current = abi.decode(

@@ -91,16 +91,19 @@ contract BeanstalkTrapV3 is ITrap {
         if (!currentOk || !previousOk) return (false, bytes(""));
         if (!_validPair(current, previous)) return (false, bytes(""));
 
-        if (current.status != BeanstalkTypes.STATUS_OK) return (false, bytes(""));
-        if (previous.status != BeanstalkTypes.STATUS_OK) return (false, bytes(""));
+        if (current.status != BeanstalkTypes.STATUS_OK)
+            return (false, bytes(""));
+        if (previous.status != BeanstalkTypes.STATUS_OK)
+            return (false, bytes(""));
         if (current.paused != 0) return (false, bytes(""));
 
-        bool hasSuperMajority =
-            current.topHolderStalk * SUPERMAJORITY_DENOMINATOR >=
+        bool hasSuperMajority = current.topHolderStalk *
+            SUPERMAJORITY_DENOMINATOR >=
             current.totalStalk * SUPERMAJORITY_NUMERATOR;
 
         bool stakeIncreased = current.topHolderStalk > previous.topHolderStalk;
-        bool insideDelayWindow = current.topHolderReadyBlock > current.blockNumber;
+        bool insideDelayWindow = current.topHolderReadyBlock >
+            current.blockNumber;
 
         if (!hasSuperMajority || !stakeIncreased || !insideDelayWindow) {
             return (false, bytes(""));
@@ -135,13 +138,14 @@ contract BeanstalkTrapV3 is ITrap {
         bytes[] calldata data
     ) external pure returns (bool, bytes memory) {
         if (data.length != REQUIRED_SAMPLES) {
-            return _alert(
-                address(0),
-                0,
-                BeanstalkTypes.STATUS_INVALID_SAMPLE,
-                BeanstalkTypes.REASON_INVALID_SAMPLE_WINDOW,
-                abi.encode(data.length)
-            );
+            return
+                _alert(
+                    address(0),
+                    0,
+                    BeanstalkTypes.STATUS_INVALID_SAMPLE,
+                    BeanstalkTypes.REASON_INVALID_SAMPLE_WINDOW,
+                    abi.encode(data.length)
+                );
         }
 
         (
@@ -149,13 +153,14 @@ contract BeanstalkTrapV3 is ITrap {
             BeanstalkTypes.CollectOutput memory current
         ) = _decodeCollectOutput(data[0]);
         if (!currentOk) {
-            return _alert(
-                address(0),
-                0,
-                BeanstalkTypes.STATUS_INVALID_SAMPLE,
-                BeanstalkTypes.REASON_OPERATIONAL_FAILURE,
-                bytes("")
-            );
+            return
+                _alert(
+                    address(0),
+                    0,
+                    BeanstalkTypes.STATUS_INVALID_SAMPLE,
+                    BeanstalkTypes.REASON_OPERATIONAL_FAILURE,
+                    bytes("")
+                );
         }
 
         uint256 reason;
@@ -180,13 +185,14 @@ contract BeanstalkTrapV3 is ITrap {
 
         if (reason == 0) return (false, bytes(""));
 
-        return _alert(
-            current.target,
-            current.blockNumber,
-            current.status,
-            reason,
-            bytes("")
-        );
+        return
+            _alert(
+                current.target,
+                current.blockNumber,
+                current.status,
+                reason,
+                bytes("")
+            );
     }
 
     function decodeAlertOutput(
@@ -205,7 +211,8 @@ contract BeanstalkTrapV3 is ITrap {
         if (current.invariantId != BeanstalkTypes.INVARIANT_ID) return false;
         if (previous.invariantId != BeanstalkTypes.INVARIANT_ID) return false;
 
-        if (current.target == address(0) || previous.target == address(0)) return false;
+        if (current.target == address(0) || previous.target == address(0))
+            return false;
         if (current.target != previous.target) return false;
 
         if (current.blockNumber != previous.blockNumber + 1) return false;
@@ -274,21 +281,33 @@ contract BeanstalkTrapV3 is ITrap {
         pausedWord = _memUintAt(raw, 5);
     }
 
-    function _wordAt(bytes calldata raw, uint256 index) internal pure returns (bytes32 word) {
+    function _wordAt(
+        bytes calldata raw,
+        uint256 index
+    ) internal pure returns (bytes32 word) {
         assembly {
             word := calldataload(add(raw.offset, mul(index, 32)))
         }
     }
 
-    function _uintAt(bytes calldata raw, uint256 index) internal pure returns (uint256) {
+    function _uintAt(
+        bytes calldata raw,
+        uint256 index
+    ) internal pure returns (uint256) {
         return uint256(_wordAt(raw, index));
     }
 
-    function _addressAt(bytes calldata raw, uint256 index) internal pure returns (address) {
+    function _addressAt(
+        bytes calldata raw,
+        uint256 index
+    ) internal pure returns (address) {
         return address(uint160(uint256(_wordAt(raw, index))));
     }
 
-    function _memUintAt(bytes memory raw, uint256 index) internal pure returns (uint256 value) {
+    function _memUintAt(
+        bytes memory raw,
+        uint256 index
+    ) internal pure returns (uint256 value) {
         assembly {
             value := mload(add(add(raw, 32), mul(index, 32)))
         }
