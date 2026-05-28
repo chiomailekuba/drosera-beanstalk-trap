@@ -3,7 +3,7 @@ pragma solidity ^0.8.20;
 
 import "./BeanstalkTypesV4.sol";
 
-interface IBeanstalkPausableV4 {
+interface IBeanstalkPausable {
     function pause() external;
     function paused() external view returns (bool);
 }
@@ -19,6 +19,13 @@ contract BeanstalkVaultV4 {
     uint256 public responseCount;
 
     mapping(bytes32 => bool) public handledIncident;
+
+    event GovernanceTakeoverContained(
+        bytes32 indexed incidentId,
+        uint256 indexed currentBlock,
+        uint256 reason
+    );
+    event DuplicateIncidentIgnored(bytes32 indexed incidentId);
 
     error NotDrosera();
     error InvalidPayload();
@@ -49,6 +56,7 @@ contract BeanstalkVaultV4 {
 
         bytes32 incidentId = keccak256(rawIncident);
         if (handledIncident[incidentId]) {
+            emit DuplicateIncidentIgnored(incidentId);
             return;
         }
 
@@ -92,10 +100,16 @@ contract BeanstalkVaultV4 {
         lastResponseBlock = block.number;
         responseCount += 1;
 
-        IBeanstalkPausableV4(TARGET).pause();
+        IBeanstalkPausable(TARGET).pause();
 
-        if (!IBeanstalkPausableV4(TARGET).paused()) {
+        if (!IBeanstalkPausable(TARGET).paused()) {
             revert PauseFailed();
         }
+
+        emit GovernanceTakeoverContained(
+            incidentId,
+            incident.currentBlock,
+            incident.reason
+        );
     }
 }

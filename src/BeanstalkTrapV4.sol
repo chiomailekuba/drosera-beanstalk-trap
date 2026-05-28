@@ -111,6 +111,79 @@ contract BeanstalkTrapV4 is ITrap {
         return (true, abi.encode(incident));
     }
 
+    function shouldAlert(
+        bytes[] calldata data
+    ) external pure returns (bool, bytes memory) {
+        if (data.length != REQUIRED_SAMPLES) {
+            return
+                _alert(
+                    address(0),
+                    0,
+                    BeanstalkTypesV4.STATUS_INVALID_SAMPLE,
+                    BeanstalkTypesV4.REASON_INVALID_SAMPLE_WINDOW,
+                    BeanstalkTypesV4.SEVERITY_WARNING,
+                    abi.encode(data.length)
+                );
+        }
+
+        (
+            bool currentOk,
+            BeanstalkTypesV4.CollectOutput memory current
+        ) = _decodeCollectOutput(data[0]);
+
+        if (!currentOk) {
+            return
+                _alert(
+                    address(0),
+                    0,
+                    BeanstalkTypesV4.STATUS_INVALID_SAMPLE,
+                    BeanstalkTypesV4.REASON_OPERATIONAL_FAILURE,
+                    BeanstalkTypesV4.SEVERITY_CRITICAL,
+                    bytes("")
+                );
+        }
+
+        uint256 reason;
+        uint256 severity = BeanstalkTypesV4.SEVERITY_WARNING;
+
+        if (current.status == BeanstalkTypesV4.STATUS_TARGET_MISSING) {
+            reason = BeanstalkTypesV4.REASON_TARGET_MISSING;
+            severity = BeanstalkTypesV4.SEVERITY_CRITICAL;
+        } else if (current.status == BeanstalkTypesV4.STATUS_READ_FAILED) {
+            reason = BeanstalkTypesV4.REASON_READ_FAILED;
+            severity = BeanstalkTypesV4.SEVERITY_CRITICAL;
+        } else {
+            (
+                bool previousOk,
+                BeanstalkTypesV4.CollectOutput memory previous
+            ) = _decodeCollectOutput(data[1]);
+
+            if (!previousOk || !_validPair(current, previous)) {
+                reason = BeanstalkTypesV4.REASON_INVALID_SAMPLE_WINDOW;
+            }
+        }
+
+        if (reason == 0) {
+            return (false, bytes(""));
+        }
+
+        return
+            _alert(
+                current.target,
+                current.blockNumber,
+                current.status,
+                reason,
+                severity,
+                bytes("")
+            );
+    }
+
+    function decodeAlertOutput(
+        bytes calldata raw
+    ) external pure returns (BeanstalkTypesV4.Alert memory) {
+        return abi.decode(raw, (BeanstalkTypesV4.Alert));
+    }
+
     function _validPair(
         BeanstalkTypesV4.CollectOutput memory current,
         BeanstalkTypesV4.CollectOutput memory previous
@@ -161,6 +234,27 @@ contract BeanstalkTrapV4 is ITrap {
         out.canceled = _uintAt(raw, 13) == 0 ? 0 : 1;
 
         return (true, out);
+    }
+
+    function _alert(
+        address target,
+        uint256 blockNumber,
+        uint256 status,
+        uint256 reason,
+        uint256 severity,
+        bytes memory extraData
+    ) internal pure returns (bool, bytes memory) {
+        BeanstalkTypesV4.Alert memory alert = BeanstalkTypesV4.Alert({
+            invariantId: BeanstalkTypesV4.INVARIANT_ID,
+            target: target,
+            blockNumber: blockNumber,
+            status: status,
+            reason: reason,
+            severity: severity,
+            extraData: extraData
+        });
+
+        return (true, abi.encode(alert));
     }
 
     function _wordAt(

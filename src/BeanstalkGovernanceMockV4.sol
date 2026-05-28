@@ -15,8 +15,10 @@ contract BeanstalkGovernanceMockV4 {
     bool public paused;
     bool public executed;
     bool public canceled;
+    uint256 public proposalNonce;
 
     mapping(address => uint256) public supporterVotes;
+    mapping(address => uint256) public supporterNonce;
 
     uint256 public constant INITIAL_TREASURY = 182_000_000 ether;
     uint256 public constant QUEUE_DELAY_BLOCKS = 1;
@@ -52,7 +54,7 @@ contract BeanstalkGovernanceMockV4 {
         uint256 thresholdVotes_
     ) external onlyOwner {
         require(
-            !queued && !executed,
+            !(queued && !executed && !canceled),
             "BeanstalkGovernanceMockV4: active proposal exists"
         );
         require(
@@ -66,9 +68,9 @@ contract BeanstalkGovernanceMockV4 {
         topSupporterVotes = 0;
         queued = false;
         readyBlock = 0;
-        paused = false;
         executed = false;
         canceled = false;
+        proposalNonce += 1;
     }
 
     function supportProposal(uint256 votes) external {
@@ -79,7 +81,12 @@ contract BeanstalkGovernanceMockV4 {
         );
         require(votes > 0, "BeanstalkGovernanceMockV4: invalid votes");
 
-        if (supporterVotes[msg.sender] == 0) {
+        // Use proposal nonce to avoid stale voter state across proposals.
+        if (supporterNonce[msg.sender] != proposalNonce) {
+            supporterNonce[msg.sender] = proposalNonce;
+            supporterVotes[msg.sender] = 0;
+            supportVoterCount += 1;
+        } else if (supporterVotes[msg.sender] == 0) {
             supportVoterCount += 1;
         }
 

@@ -8,10 +8,18 @@ library BeanstalkTypesV4 {
     uint256 internal constant STATUS_OK = 0;
     uint256 internal constant STATUS_TARGET_MISSING = 1;
     uint256 internal constant STATUS_READ_FAILED = 2;
+    uint256 internal constant STATUS_INVALID_SAMPLE = 3;
 
     uint256 internal constant REASON_THRESHOLD_CROSS_DELAY_WINDOW = 1;
     uint256 internal constant REASON_COORDINATED_MULTI_SUPPORTER = 2;
     uint256 internal constant REASON_SINGLE_WHALE_SUPPORT = 3;
+    uint256 internal constant REASON_OPERATIONAL_FAILURE = 4;
+    uint256 internal constant REASON_INVALID_SAMPLE_WINDOW = 5;
+    uint256 internal constant REASON_TARGET_MISSING = 6;
+    uint256 internal constant REASON_READ_FAILED = 7;
+
+    uint256 internal constant SEVERITY_WARNING = 1;
+    uint256 internal constant SEVERITY_CRITICAL = 3;
 
     struct CollectOutput {
         uint256 schemaVersion;
@@ -42,5 +50,15 @@ library BeanstalkTypesV4 {
         uint256 previousBlock;
         uint256 readyBlock;
         uint256 reason;
+    }
+
+    struct Alert {
+        bytes32 invariantId;
+        address target;
+        uint256 blockNumber;
+        uint256 status;
+        uint256 reason;
+        uint256 severity;
+        bytes extraData;
     }
 }
