@@ -2,11 +2,11 @@
 pragma solidity ^0.8.20;
 
 import "forge-std/Test.sol";
-import "../src/BeanstalkAttacker.sol";
-import "../src/BeanstalkMock.sol";
-import "../src/BeanstalkTrapV3.sol";
-import "../src/BeanstalkTypes.sol";
-import "../src/BeanstalkVaultV3.sol";
+import "../../src/v3/BeanstalkAttacker.sol";
+import "../../src/v3/BeanstalkMock.sol";
+import "../../src/v3/BeanstalkTrapV3.sol";
+import "../../src/v3/BeanstalkTypes.sol";
+import "../../src/v3/BeanstalkVaultV3.sol";
 
 contract TrapHarnessV3 is BeanstalkTrapV3 {
     address private immutable configuredTarget;
